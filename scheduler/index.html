@@ -508,7 +508,10 @@
         });
 
         // 頁面載入時自動檢查 URL 參數
-        window.onload = loadTasksFromURL;
+        window.onload = function() {
+            loadTasksFromURL();
+            renderTasks();
+        };
     </script>
 </body>
 </html>
