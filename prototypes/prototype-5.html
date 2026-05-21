@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaloScanAi - Tech Medical</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+TC:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #e8eef4;
+  --primary: #0052cc;
+  --primary-dark: #003d99;
+  --primary-light: #2684ff;
+  --accent: #00b8d9;
+  --accent-light: #79f2ff;
+  --success: #00875a;
+  --warning: #ff8b00;
+  --text: #172b4d;
+  --text-muted: #5e6c84;
+  --border: #dfe1e6;
+  --border-light: #ebecf0;
+  --shadow: 0 4px 16px rgba(0,82,204,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,82,204,0.12);
+}
+[data-theme="dark"] {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --primary: #2684ff;
+  --primary-dark: #0052cc;
+  --primary-light: #79c0ff;
+  --accent: #00d4ff;
+  --accent-light: #79f2ff;
+  --success: #3fb950;
+  --warning: #d29922;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --border: #30363d;
+  --border-light: #21262d;
+  --shadow: 0 4px 16px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'IBM Plex Sans TC', 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
+}
+
+/* Nav */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  padding: 0 60px;
+  height: 64px;
+  display: flex; justify-content:space-between; align-items:center;
+  background: var(--surface);
+  border-bottom: 2px solid var(--primary);
+  box-shadow: var(--shadow);
+}
+.logo {
+  font-size:1.1rem; font-weight:700;
+  color: var(--primary);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-mark {
+  width: 32px; height: 32px;
+  background: var(--primary);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  color: white;
+}
+.nav-links { display:flex; gap:4px; list-style:none; }
+.nav-links a {
+  text-decoration:none; color:var(--text-muted);
+  font-size:0.875rem; font-weight:500;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.nav-links a:hover, .nav-links a.active {
+  background: var(--primary);
+  color: white;
+}
+.theme-toggle {
+  width:36px; height:36px; border-radius:4px;
+  border:1px solid var(--border);
+  background: var(--surface); cursor:pointer;
+  font-size:1rem;
+  display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s;
+  color: var(--text-muted);
+}
+.theme-toggle:hover {
+  border-color:var(--primary);
+  color: var(--primary);
+}
+
+/* Hero */
+.hero {
+  min-height: calc(100vh - 64px);
+  display: flex; align-items: center;
+  padding: 100px 60px 80px;
+  position: relative;
+}
+.hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(0,82,204,0.08);
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+}
+[data-theme="dark"] .hero-badge {
+  background: rgba(38,132,255,0.12);
+}
+.hero h1 {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+.hero h1 .blue { color: var(--primary); }
+.hero p {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  margin-bottom: 36px;
+  max-width: 440px;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+}
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 12px;
+}
+.btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Scanner visual */
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.scanner-frame {
+  width: 340px;
+  height: 340px;
+  border: 3px solid var(--primary);
+  border-radius: 12px;
+  position: relative;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+.scanner-corner {
+  position: absolute;
+  width: 24px; height: 24px;
+  border-color: var(--accent);
+  border-style: solid;
+}
+.scanner-corner.tl { top: -3px; left: -3px; border-width: 4px 0 0 4px; border-radius: 8px 0 0 0; }
+.scanner-corner.tr { top: -3px; right: -3px; border-width: 4px 4px 0 0; border-radius: 0 8px 0 0; }
+.scanner-corner.bl { bottom: -3px; left: -3px; border-width: 0 0 4px 4px; border-radius: 0 0 0 8px; }
+.scanner-corner.br { bottom: -3px; right: -3px; border-width: 0 4px 4px 0; border-radius: 0 0 8px 0; }
+.scanner-line {
+  position: absolute;
+  top: 20%; left: 8%; right: 8%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scanMove 2.5s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--accent);
+}
+@keyframes scanMove {
+  0%, 100% { top: 20%; opacity: 1; }
+  50% { top: 75%; opacity: 0.5; }
+}
+.scanner-food {
+  position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 5rem;
+}
+.scanner-data {
+  position: absolute;
+  bottom: 20px; left: 20px; right: 20px;
+  background: rgba(0,82,204,0.06);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.scanner-data-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.scanner-data-row:last-child { border-bottom: none; }
+.scanner-data-label { color: var(--text-muted); }
+.scanner-data-val { font-weight: 600; color: var(--primary); }
+
+/* Stats strip */
+.stats-strip {
+  background: var(--primary);
+  padding: 20px 60px;
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+.stats-strip .stat { text-align: center; color: white; }
+.stats-strip .stat-val { font-size: 1.6rem; font-weight: 700; }
+.stats-strip .stat-lbl { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Features */
+.features {
+  padding: 100px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 700;
+  margin-bottom: 48px;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px 28px;
+  transition: all 0.2s;
+  position: relative;
+}
+.feature-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+.feature-card::before {
+  content: attr(data-num);
+  position: absolute;
+  top: 20px; right: 20px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--border);
+  font-family: 'IBM Plex Sans', monospace;
+}
+.feature-icon {
+  width: 44px; height: 44px;
+  background: rgba(0,82,204,0.08);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+}
+.feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 8px; }
+.feature-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; }
+
+/* Quote */
+.quote-section {
+  padding: 80px 60px;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.quote-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+.quote-text {
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--primary);
+  padding-left: 20px;
+  text-align: left;
+}
+.quote-date { font-size: 0.85rem; color: var(--text-muted); text-align: right; }
+
+/* CTA */
+.cta-section {
+  padding: 80px 60px;
+  text-align: center;
+}
+.cta-section h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
+.cta-section p { color: var(--text-muted); margin-bottom: 32px; }
+
+/* Footer */
+footer {
+  padding: 24px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+footer a { color: var(--primary); text-decoration: none; }
+
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; text-align: center; }
+  .hero p { margin: 0 auto 36px; }
+  .hero-visual { margin-top: 40px; }
+}
+@media (max-width: 768px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .hero, .features, .quote-section, .cta-section { padding: 80px 24px; }
+  .stats-strip { gap: 40px; padding: 20px 24px; }
+  footer { padding: 20px 24px; flex-direction: column; gap: 8px; }
+  .scanner-frame { width: 280px; height: 280px; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+    <div class="logo-mark">CS</div>
+    CaloScanAi
+  </div>
+  <ul class="nav-links">
+    <li><a href="#" class="active">功能特色</a></li>
+    <li><a href="#">系統介紹</a></li>
+    <li><a href="#">後台登入</a></li>
+  </ul>
+  <button class="theme-toggle" onclick="toggleTheme()" title="切換主題">&#9788;</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">&#9679; 醫療級 AI 熱量分析</div>
+      <h1>精準營養管理<br><span class="blue">從每一餐開始</span></h1>
+      <p>CaloScanAi 以科學為基礎，打造精準的熱量追蹤系統。拍下食物，AI 即時分析，為您的健康把關每一卡路里。</p>
+      <div>
+        <a href="#" class="btn-primary">開始使用 &#8594;</a>
+        <a href="#" class="btn-secondary">了解更多</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="scanner-frame">
+        <div class="scanner-corner tl"></div>
+        <div class="scanner-corner tr"></div>
+        <div class="scanner-corner bl"></div>
+        <div class="scanner-corner br"></div>
+        <div class="scanner-line"></div>
+        <div class="scanner-food">&#127828;</div>
+        <div class="scanner-data">
+          <div class="scanner-data-row">
+            <span class="scanner-data-label">食物</span>
+            <span class="scanner-data-val">義大利麵</span>
+          </div>
+          <div class="scanner-data-row">
+            <span class="scanner-data-label">熱量</span>
+            <span class="scanner-data-val">485 kcal</span>
+          </div>
+          <div class="scanner-data-row">
+            <span class="scanner-data-label">蛋白質</span>
+            <span class="scanner-data-val">12.5 g</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats-strip">
+  <div class="stat">
+    <div class="stat-val">365</div>
+    <div class="stat-lbl">鼓勵語</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">&lt;300KB</div>
+    <div class="stat-lbl">圖片壓縮</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">95%+</div>
+    <div class="stat-lbl">AI 準確率</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">24/7</div>
+    <div class="stat-lbl">全年無休</div>
+  </div>
+</div>
+
+<section class="features">
+  <div class="section-label">系統功能</div>
+  <h2 class="section-title">四大核心模組</h2>
+  <div class="features-grid">
+    <div class="feature-card" data-num="01">
+      <div class="feature-icon">&#128247;</div>
+      <h3>AI 視覺辨識引擎</h3>
+      <p>深度學習模型，即時分析食物影像，自動換算熱量與營養素含量，精確度達 95% 以上。</p>
+    </div>
+    <div class="feature-card" data-num="02">
+      <div class="feature-icon">&#128200;</div>
+      <h3>額度管理系統</h3>
+      <p>個人化每日熱量上限設定，智慧提醒與視覺化圖表，協助達成健康管理目標。</p>
+    </div>
+    <div class="feature-card" data-num="03">
+      <div class="feature-icon">&#128171;</div>
+      <h3>每日鼓勵語錄</h3>
+      <p>365 天不重複的激勵話語，專業團隊精選，陪伴您每一天的健康旅程。</p>
+    </div>
+    <div class="feature-card" data-num="04">
+      <div class="feature-icon">&#128187;</div>
+      <h3>管理員儀表板</h3>
+      <p>完整系統監控、會員管理、資料庫備份還原，管理者最佳營運工具。</p>
+    </div>
+  </div>
+</section>
+
+<section class="quote-section">
+  <div class="quote-inner">
+    <p class="quote-text">「數據不是限制，而是自由。當你了解了自己的攝取，就掌握了健康的鑰匙。」</p>
+    <div class="quote-date">— 每日語錄 #142</div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>立即開始精準健康管理</h2>
+  <p>免費註冊，科學化的 AI 營養追蹤從這裡開始</p>
+  <a href="#" class="btn-primary">免費開始使用 &#8594;</a>
+</section>
+
+<footer>
+  <p>CaloScanAi &copy; 2026  版權所有</p>
+  <p><a href="#">支持這個專案</a></p>
+</footer>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  localStorage.setItem('theme', html.getAttribute('data-theme'));
+}
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+</script>
+</body>
+</html>

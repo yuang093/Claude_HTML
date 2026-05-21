@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaloScanAi - HTML Prototypes</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; padding: 60px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 2.5rem; margin-bottom: 8px; }
+  .subtitle { color: #888; margin-bottom: 48px; font-size: 1.1rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+  .card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 28px;
+    text-decoration: none;
+    color: #fff;
+    transition: all 0.3s;
+  }
+  .card:hover { border-color: #00d9ff; transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,217,255,0.15); }
+  .card-num { font-size: 0.8rem; color: #888; margin-bottom: 8px; letter-spacing: 1px; }
+  .card h2 { font-size: 1.2rem; margin-bottom: 8px; }
+  .card p { font-size: 0.85rem; color: #888; line-height: 1.5; }
+  .card .tag { display: inline-block; padding: 4px 10px; background: #222; border-radius: 6px; font-size: 0.75rem; color: #aaa; margin-top: 12px; }
+  .scheduler { background: linear-gradient(135deg, #1a1a1a, #1a2a2a); border-color: #00ff9f; }
+  .scheduler:hover { border-color: #00ff9f; box-shadow: 0 8px 32px rgba(0,255,159,0.2); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>CaloScanAi</h1>
+  <p class="subtitle">HTML Prototypes Collection</p>
+  <div class="grid">
+    <a href="/scheduler/" class="card scheduler">
+      <div class="card-num">TOOL</div>
+      <h2>&#128203; 任務優先序排程器</h2>
+      <p>拖曳卡片調整優先序，產出 Prompt 給 AI</p>
+      <span class="tag">已部署</span>
+    </a>
+    <a href="/p1" class="card">
+      <div class="card-num">PROTOTYPE 1</div>
+      <h2>Fresh Minimal</h2>
+      <p>白/綠色清新風格，植物系卡片設計</p>
+      <span class="tag">&#127793; 自然</span>
+    </a>
+    <a href="/p2" class="card">
+      <div class="card-num">PROTOTYPE 2</div>
+      <h2>Neon Dark</h2>
+      <p>賽博龐克暗色系，霓虹發光效果</p>
+      <span class="tag">&#128308; 炫酷</span>
+    </a>
+    <a href="/p3" class="card">
+      <div class="card-num">PROTOTYPE 3</div>
+      <h2>Warm Organic</h2>
+      <p>赤陶、奶油大地色系，食物攝影風</p>
+      <span class="tag">&#127834; 溫暖</span>
+    </a>
+    <a href="/p4" class="card">
+      <div class="card-num">PROTOTYPE 4</div>
+      <h2>Health Gradient</h2>
+      <p>日出漸層色彩，活力現代風格</p>
+      <span class="tag">&#127774; 活力</span>
+    </a>
+    <a href="/p5" class="card">
+      <div class="card-num">PROTOTYPE 5</div>
+      <h2>Tech Medical</h2>
+      <p>臨床白/藍色系，精準實驗室風</p>
+      <span class="tag">&#128300; 專業</span>
+    </a>
+    <a href="/p6" class="card">
+      <div class="card-num">PROTOTYPE 6</div>
+      <h2>Playful Pop</h2>
+      <p>明亮繽紛色彩，彈跳動畫年輕風</p>
+      <span class="tag">&#127852; 俏皮</span>
+    </a>
+  </div>
+</div>
+</body>
+</html>

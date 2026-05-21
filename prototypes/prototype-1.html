@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaloScanAi - Fresh Minimal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8faf8;
+  --surface: #ffffff;
+  --primary: #2d6a4f;
+  --primary-light: #40916c;
+  --accent: #74c69d;
+  --text: #1b4332;
+  --text-muted: #52796f;
+  --border: #d8f3dc;
+  --shadow: 0 4px 24px rgba(45,106,79,0.08);
+  --radius: 20px;
+}
+[data-theme="dark"] {
+  --bg: #0f1f15;
+  --surface: #1a2e22;
+  --primary: #74c69d;
+  --primary-light: #95d5b2;
+  --accent: #2d6a4f;
+  --text: #d8f3dc;
+  --text-muted: #95d5b2;
+  --border: #2d6a4f;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
+}
+h1, h2, h3 { font-family: 'Noto Serif TC', serif; }
+
+/* Nav */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  padding: 20px 60px;
+  display: flex; justify-content:space-between; align-items:center;
+  background: rgba(248,250,248,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+[data-theme="dark"] nav { background: rgba(15,31,21,0.85); }
+.logo { font-size:1.5rem; font-weight:700; color:var(--primary); letter-spacing:-0.5px; }
+.logo span { color: var(--accent); }
+.nav-links { display:flex; gap:32px; list-style:none; }
+.nav-links a { text-decoration:none; color:var(--text-muted); font-size:0.9rem; font-weight:500; transition:color 0.2s; }
+.nav-links a:hover { color: var(--primary); }
+.theme-toggle {
+  width:44px; height:44px; border-radius:50%; border:2px solid var(--border);
+  background: var(--surface); cursor:pointer; font-size:1.2rem;
+  display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s;
+}
+.theme-toggle:hover { border-color:var(--primary); transform:rotate(15deg); }
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 120px 60px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content:'';
+  position: absolute; top:-50%; right:-20%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(116,198,157,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-content {
+  max-width: 900px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: var(--border);
+  color: var(--primary);
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 32px;
+  animation: fadeUp 0.8s ease both;
+}
+[data-theme="dark"] .badge { background: var(--accent); color: var(--bg); }
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.15;
+  margin-bottom: 24px;
+  animation: fadeUp 0.8s ease 0.1s both;
+}
+.hero h1 em {
+  font-style: normal;
+  color: var(--primary);
+  position: relative;
+}
+.hero h1 em::after {
+  content:'';
+  position: absolute;
+  bottom: 4px; left: 0; right: 0;
+  height: 12px;
+  background: var(--accent);
+  opacity: 0.4;
+  z-index: -1;
+  border-radius: 4px;
+}
+.hero p {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  max-width: 560px;
+  margin: 0 auto 48px;
+  animation: fadeUp 0.8s ease 0.2s both;
+}
+.cta-group {
+  display: flex; gap: 16px; justify-content: center; flex-wrap:wrap;
+  animation: fadeUp 0.8s ease 0.3s both;
+}
+.btn-primary {
+  padding: 16px 40px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(45,106,79,0.25);
+}
+.btn-primary:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(45,106,79,0.35);
+}
+.btn-secondary {
+  padding: 16px 40px;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-secondary:hover { border-color: var(--primary); }
+
+/* Stats */
+.stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 700px;
+  margin: 80px auto 0;
+  animation: fadeUp 0.8s ease 0.4s both;
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 20px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.stat:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Noto Serif TC', serif;
+}
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Features */
+.features {
+  padding: 120px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-label {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.section-title {
+  text-align: center;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin-bottom: 60px;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 32px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::before {
+  content:'';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
+.feature-card:hover::before { opacity: 1; }
+.feature-icon {
+  width: 56px; height: 56px;
+  background: var(--border);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 24px;
+}
+.feature-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+.feature-card p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.7; }
+
+/* Quote Section */
+.quote-section {
+  padding: 100px 60px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.quote-card {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+}
+.quote-card::before {
+  content: '"';
+  position: absolute;
+  top: -40px; left: 50%; transform: translateX(-50%);
+  font-size: 8rem;
+  color: var(--border);
+  font-family: 'Noto Serif TC', serif;
+  line-height: 1;
+}
+.quote-text {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  line-height: 1.6;
+  color: var(--text);
+  font-family: 'Noto Serif TC', serif;
+  margin-bottom: 24px;
+}
+.quote-date {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* CTA Banner */
+.cta-banner {
+  padding: 100px 60px;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.cta-banner h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin-bottom: 20px;
+}
+.cta-banner p {
+  color: var(--text-muted);
+  margin-bottom: 40px;
+}
+
+/* Footer */
+footer {
+  padding: 40px 60px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Upload Widget */
+.upload-zone {
+  max-width: 500px;
+  margin: 48px auto 0;
+  border: 2px dashed var(--border);
+  border-radius: 24px;
+  padding: 60px 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  animation: fadeUp 0.8s ease 0.5s both;
+}
+.upload-zone:hover {
+  border-color: var(--primary);
+  background: rgba(45,106,79,0.03);
+}
+.upload-zone .icon { font-size: 3rem; margin-bottom: 16px; }
+.upload-zone p { color: var(--text-muted); font-size: 0.95rem; }
+.upload-zone .highlight { color: var(--primary); font-weight: 600; }
+
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .hero { padding: 100px 24px 60px; }
+  .features { padding: 80px 24px; }
+  .quote-section, .cta-banner { padding: 80px 24px; }
+  .stats { grid-template-columns: 1fr; gap: 16px; margin-top: 48px; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Calo<span>Scan</span>Ai</div>
+  <ul class="nav-links">
+    <li><a href="#">功能特色</a></li>
+    <li><a href="#">關於我們</a></li>
+    <li><a href="#">後台登入</a></li>
+  </ul>
+  <button class="theme-toggle" onclick="toggleTheme()" title="切換主題">&#9788;</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="badge">&#127919; AI 智慧熱量追蹤</div>
+    <h1>拍照記錄飲食<br><em>熱量一手掌握</em></h1>
+    <p>透過 AI 影像辨識，瞬間分析食物熱量。告別手動輸入，讓健康管理變得簡單自然。</p>
+    <div class="cta-group">
+      <button class="btn-primary">立即開始</button>
+      <button class="btn-secondary">了解更多</button>
+    </div>
+    <div class="upload-zone" onclick="alert('上傳功能展示區塊')">
+      <div class="icon">&#128247;</div>
+      <p>拖曳照片至此或<span class="highlight">點擊上傳</span></p>
+      <p style="font-size:0.8rem; margin-top:8px; color:var(--text-muted)">支援拍照、條碼掃描、營養標示</p>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stat">
+    <div class="stat-value">365</div>
+    <div class="stat-label">鼓勵語錄</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">&lt;300KB</div>
+    <div class="stat-label">圖片壓縮</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">AI</div>
+    <div class="stat-label">智慧辨識</div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="section-label">核心功能</div>
+  <h2 class="section-title">為你的健康生活打造</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">&#128247;</div>
+      <h3>AI 拍照辨識</h3>
+      <p>拍攝食物照片，AI 即時分析食物種類與熱量，支援營養標示與條碼掃描。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#127942;</div>
+      <h3>每日額度管理</h3>
+      <p>設定個人每日熱量上限，系統貼心提醒，協助達成健康管理目標。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128172;</div>
+      <h3>每日鼓勵語錄</h3>
+      <p>365 句溫暖話語每天輪播，陪您走在健康路上不孤單。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128200;</div>
+      <h3>管理員儀表板</h3>
+      <p>完整統計數據、會員管理、資料庫備份還原，一手掌握系統狀態。</p>
+    </div>
+  </div>
+</section>
+
+<section class="quote-section">
+  <div class="quote-card">
+    <p class="quote-text">每一天的小進步，都是健康生活的大累積。堅持下去，你會遇見更好的自己。</p>
+    <div class="quote-date">— 2026 年 5 月 22 日</div>
+  </div>
+</section>
+
+<section class="cta-banner">
+  <h2>準備好開始你的健康之旅了嗎？</h2>
+  <p>免費註冊，AI 幫你輕鬆管理每日熱量攝取</p>
+  <button class="btn-primary">免費開始使用</button>
+</section>
+
+<footer>
+  <p>CaloScanAi &copy; 2026 &nbsp;|&nbsp; <a href="#" style="color:var(--primary)">贊助作者</a></p>
+</footer>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  localStorage.setItem('theme', html.getAttribute('data-theme'));
+}
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+</script>
+</body>
+</html>
