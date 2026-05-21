@@ -300,6 +300,21 @@
         let tasks = [];
         let draggedCard = null;
 
+        // 從 URL 參數讀取任務
+        function loadTasksFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const tasksParam = params.get('tasks');
+            if (tasksParam) {
+                try {
+                    const decoded = decodeURIComponent(atob(tasksParam));
+                    const taskList = decoded.split('\n').filter(t => t.trim());
+                    addTasksFromList(taskList);
+                } catch (e) {
+                    console.error('載入任務失敗:', e);
+                }
+            }
+        }
+
         function addTask() {
             const input = document.getElementById('taskInput');
             const taskText = input.value.trim();
@@ -480,6 +495,9 @@
                 addTask();
             }
         });
+
+        // 頁面載入時自動檢查 URL 參數
+        window.onload = loadTasksFromURL;
     </script>
 </body>
 </html>
