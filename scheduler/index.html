@@ -297,7 +297,18 @@
     </div>
 
     <script>
-        let tasks = [];
+        let tasks = [
+            { id: 1, text: "決定 UI/UX 風格（6 個 HTML 原型挑選）", priority: "p1" },
+            { id: 2, text: "建立 docker-compose.yml + 資料庫初始化腳本", priority: "p1" },
+            { id: 3, text: "實作會員登入/註冊機制", priority: "p1" },
+            { id: 4, text: "實作影像壓縮模組（< 300KB, max 1200px）", priority: "p2" },
+            { id: 5, text: "串接 AI API 分析食物照片", priority: "p2" },
+            { id: 6, text: "實作條碼掃描與字典檔搜尋功能", priority: "p2" },
+            { id: 7, text: "實作後台儀表板（統計數據）", priority: "p3" },
+            { id: 8, text: "實作資料庫備份/還原機制", priority: "p3" },
+            { id: 9, text: "實作深色/亮色模式切換", priority: "p3" },
+            { id: 10, text: "匯入 365 句鼓勵語錄 + 斗內按鈕", priority: "p3" }
+        ];
         let draggedCard = null;
 
         // 從 URL 參數讀取任務
