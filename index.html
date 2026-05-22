@@ -3,80 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CaloScanAi - HTML Prototypes</title>
+<title>CaloScanAi - 選擇你的風格</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; padding: 60px; }
-  .container { max-width: 900px; margin: 0 auto; }
-  h1 { font-size: 2.5rem; margin-bottom: 8px; }
-  .subtitle { color: #888; margin-bottom: 48px; font-size: 1.1rem; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+  body {
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    min-height: 100vh;
+    padding: 60px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .header { text-align: center; margin-bottom: 48px; }
+  h1 { font-size: 2.5rem; margin-bottom: 12px; }
+  .subtitle { color: rgba(255,255,255,0.7); font-size: 1.1rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 28px;
+    max-width: 1000px;
+    width: 100%;
+  }
   .card {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 16px;
-    padding: 28px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 36px 28px;
+    text-align: center;
     text-decoration: none;
     color: #fff;
-    transition: all 0.3s;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
   }
-  .card:hover { border-color: #00d9ff; transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,217,255,0.15); }
-  .card-num { font-size: 0.8rem; color: #888; margin-bottom: 8px; letter-spacing: 1px; }
-  .card h2 { font-size: 1.2rem; margin-bottom: 8px; }
-  .card p { font-size: 0.85rem; color: #888; line-height: 1.5; }
-  .card .tag { display: inline-block; padding: 4px 10px; background: #222; border-radius: 6px; font-size: 0.75rem; color: #aaa; margin-top: 12px; }
-  .scheduler { background: linear-gradient(135deg, #1a1a1a, #1a2a2a); border-color: #00ff9f; }
-  .scheduler:hover { border-color: #00ff9f; box-shadow: 0 8px 32px rgba(0,255,159,0.2); }
+  .card::before {
+    content:'';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(255,255,255,0.3);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .card:hover::before { opacity: 1; }
+
+  /* 俏皮 - Playful */
+  .card.playful::before { background: linear-gradient(90deg, #FF6B9D, #FFD93D); }
+  .card.playful:hover { border-color: rgba(255,107,157,0.5); }
+  .card.playful .icon { background: linear-gradient(135deg, #FF6B9D, #FFD93D); }
+
+  /* 自然 - Fresh */
+  .card.fresh::before { background: linear-gradient(90deg, #2d6a4f, #74c69d); }
+  .card.fresh:hover { border-color: rgba(45,106,79,0.5); }
+  .card.fresh .icon { background: linear-gradient(135deg, #2d6a4f, #74c69d); }
+
+  /* 溫暖 - Warm */
+  .card.warm::before { background: linear-gradient(90deg, #c85a3b, #81b29a); }
+  .card.warm:hover { border-color: rgba(200,90,59,0.5); }
+  .card.warm .icon { background: linear-gradient(135deg, #c85a3b, #81b29a); }
+
+  .icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+  .card h2 { font-size: 1.4rem; margin-bottom: 10px; }
+  .card p { font-size: 0.92rem; color: rgba(255,255,255,0.6); line-height: 1.5; }
+  .tag {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 6px 16px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50px;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .divider {
+    max-width: 600px;
+    margin: 48px auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.85rem;
+  }
+  .divider::before, .divider::after {
+    content:'';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .other-link {
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+  .other-link:hover { color: rgba(255,255,255,0.8); }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>CaloScanAi</h1>
-  <p class="subtitle">HTML Prototypes Collection</p>
+  <div class="header">
+    <h1>CaloScanAi</h1>
+    <p class="subtitle">選擇你喜歡的 UI 風格</p>
+  </div>
+
   <div class="grid">
-    <a href="/scheduler/" class="card scheduler">
-      <div class="card-num">TOOL</div>
-      <h2>&#128203; 任務優先序排程器</h2>
-      <p>拖曳卡片調整優先序，產出 Prompt 給 AI</p>
-      <span class="tag">已部署</span>
+    <a href="/p6" class="card playful">
+      <div class="icon">&#127852;</div>
+      <h2>俏皮風格</h2>
+      <p>明亮繽紛色彩，彈跳動畫<br>適合年輕活潑的使用者</p>
+      <span class="tag">Playful Pop</span>
     </a>
-    <a href="/p1" class="card">
-      <div class="card-num">PROTOTYPE 1</div>
-      <h2>Fresh Minimal</h2>
-      <p>白/綠色清新風格，植物系卡片設計</p>
-      <span class="tag">&#127793; 自然</span>
+
+    <a href="/p1" class="card fresh">
+      <div class="icon">&#127793;</div>
+      <h2>自然風格</h2>
+      <p>白/綠清新配色，植物系卡片<br>簡約自然的健康生活</p>
+      <span class="tag">Fresh Minimal</span>
     </a>
-    <a href="/p2" class="card">
-      <div class="card-num">PROTOTYPE 2</div>
-      <h2>Neon Dark</h2>
-      <p>賽博龐克暗色系，霓虹發光效果</p>
-      <span class="tag">&#128308; 炫酷</span>
-    </a>
-    <a href="/p3" class="card">
-      <div class="card-num">PROTOTYPE 3</div>
-      <h2>Warm Organic</h2>
-      <p>赤陶、奶油大地色系，食物攝影風</p>
-      <span class="tag">&#127834; 溫暖</span>
-    </a>
-    <a href="/p4" class="card">
-      <div class="card-num">PROTOTYPE 4</div>
-      <h2>Health Gradient</h2>
-      <p>日出漸層色彩，活力現代風格</p>
-      <span class="tag">&#127774; 活力</span>
-    </a>
-    <a href="/p5" class="card">
-      <div class="card-num">PROTOTYPE 5</div>
-      <h2>Tech Medical</h2>
-      <p>臨床白/藍色系，精準實驗室風</p>
-      <span class="tag">&#128300; 專業</span>
-    </a>
-    <a href="/p6" class="card">
-      <div class="card-num">PROTOTYPE 6</div>
-      <h2>Playful Pop</h2>
-      <p>明亮繽紛色彩，彈跳動畫年輕風</p>
-      <span class="tag">&#127852; 俏皮</span>
+
+    <a href="/p3" class="card warm">
+      <div class="icon">&#127834;</div>
+      <h2>溫暖風格</h2>
+      <p>赤陶奶油大地色系<br>舒適溫暖的食物攝影風</p>
+      <span class="tag">Warm Organic</span>
     </a>
   </div>
-</div>
+
+  <div class="divider">或探索其他風格</div>
+
+  <a href="/prototypes" class="other-link">查看全部 6 種原型 →</a>
 </body>
 </html>
