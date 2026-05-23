@@ -166,19 +166,12 @@
 
   <script>
     const tasks = [
-      // === 待修復 Bug ===
+      // === 第一優先 ===
       {
         id: 'bug-analyze',
         priority: 1,
         title: 'Bug: 圖片上傳分析偶爾失敗',
         desc: '圖片上傳分析有時會失敗，需要增加重試機制或錯誤處理'
-      },
-      // === 第一優先 ===
-      {
-        id: 'donation-btn',
-        priority: 1,
-        title: '1. 斗內 (Donation) 按鈕',
-        desc: '實作贊助按鈕，顯示在首頁或設定頁面'
       },
       {
         id: 'admin-back-nav',
@@ -218,6 +211,12 @@
         desc: '80% 警告、90% 強烈警告、100% 超過提醒'
       },
       // === 第三優先 ===
+      {
+        id: 'donation-btn',
+        priority: 3,
+        title: '1. 斗內 (Donation) 按鈕',
+        desc: '實作贊助按鈕，顯示在首頁或設定頁面'
+      },
       {
         id: 'recommend-plan',
         priority: 3,
