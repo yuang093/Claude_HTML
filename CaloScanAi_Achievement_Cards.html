@@ -27,8 +27,14 @@
       text-align: center;
       color: #fff;
       font-size: 2rem;
-      margin-bottom: 30px;
+      margin-bottom: 10px;
       padding: 20px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #a0aec0;
+      font-size: 1rem;
+      margin-bottom: 25px;
     }
     .random-controls {
       display: flex;
@@ -1518,6 +1524,11 @@
       const foods = getRandomFoods();
       const totalCal = foods.reduce((sum, f) => sum + f.cal, 0);
 
+      // 根據食物計算巨量營養素（簡單估算）
+      const protein = Math.round(totalCal * 0.25 / 4);  // 25% 蛋白質
+      const carbs = Math.round(totalCal * 0.45 / 4);    // 45% 碳水
+      const fat = Math.round(totalCal * 0.30 / 9);     // 30% 脂肪
+
       // 隱藏所有卡片
       document.querySelectorAll('.card-wrapper').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -1531,10 +1542,30 @@
         el.textContent = appName;
       });
 
+      // 更新熱量顯示（根據風格不同選擇器）
+      const calorieSelectors = [
+        '.natural-calories .number',
+        '.playful-hero .number',
+        '.warm-calories .number',
+        '.dark-main .glow',
+        '.data-chart .number',
+        '.pop-main .number'
+      ];
+      calorieSelectors.forEach(sel => {
+        const el = card.querySelector(sel);
+        if (el) el.textContent = totalCal.toLocaleString();
+      });
+
+      // 更新巨量營養素
+      const macroValues = card.querySelectorAll('[class*="-macro"] .value, [class*="-bar"] .value, .dark-bar .value, .playful-progress-item .val');
+      const macros = [protein + 'g', carbs + 'g', fat + 'g'];
+      macroValues.forEach((el, i) => {
+        if (macros[i]) el.textContent = macros[i];
+      });
+
       // 更新食物列表
       const foodContainer = card.querySelector('[class*="-foods"]');
       if (foodContainer) {
-        const title = foodContainer.querySelector('h3');
         const foodItems = foodContainer.querySelectorAll('[class*="-food-item"]');
         const foodIcons = ['🍎', '🥚', '🍚', '🐟', '🥗', '🍌', '🍗', '🥛', '🥑', '🍠'];
 
@@ -1543,7 +1574,7 @@
             const nameEl = foodItems[i].querySelector('[class*="-name"]');
             const calEl = foodItems[i].querySelector('[class*="-cal"]');
             if (nameEl) nameEl.textContent = `${foodIcons[i]} ${food.name}`;
-            if (calEl) calEl.textContent = `${food.cal} kcal`;
+            if (calEl) calEl.textContent = `${food.cal}`;
           }
         });
       }
