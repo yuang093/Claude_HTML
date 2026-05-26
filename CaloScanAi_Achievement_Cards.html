@@ -30,27 +30,32 @@
       margin-bottom: 30px;
       padding: 20px;
     }
-    .tabs {
+    .random-controls {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
+      gap: 15px;
       margin-bottom: 30px;
+      flex-wrap: wrap;
     }
-    .tab-btn {
-      padding: 12px 24px;
-      background: #2d2d44;
+    .random-btn {
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
       border: none;
       color: #fff;
       cursor: pointer;
-      border-radius: 25px;
-      font-size: 0.9rem;
+      border-radius: 30px;
+      font-size: 1.1rem;
       font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 700;
       transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
     }
-    .tab-btn:hover, .tab-btn.active {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+    .random-btn:hover {
       transform: scale(1.05);
+      box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+    }
+    .tab-btn {
+      display: none;
     }
     .card-wrapper {
       display: none;
@@ -1052,15 +1057,11 @@
   </svg>
 
   <div class="container">
-    <h1>CaloScanAi 成就卡片設計</h1>
+    <h1>🍽️ 今日飲食成就卡</h1>
+    <p class="subtitle">✨ 每次刷新都會隨機產生不同風格 ✨</p>
 
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('natural')">🌿 自然</button>
-      <button class="tab-btn" onclick="showTab('playful')">🌸 甜美</button>
-      <button class="tab-btn" onclick="showTab('warm')">🍊 溫暖</button>
-      <button class="tab-btn" onclick="showTab('dark')">🌙 深夜</button>
-      <button class="tab-btn" onclick="showTab('data')">📊 數據</button>
-      <button class="tab-btn" onclick="showTab('pop')">🎨 普普</button>
+    <div class="random-controls">
+      <button class="random-btn" onclick="renderRandomCard()">🔀 隨機產生卡片</button>
     </div>
 
     <!-- Style 1: Natural -->
@@ -1453,12 +1454,105 @@
   </div>
 
   <script>
+    // 隨機卡片風格
+    const styles = ['natural', 'playful', 'warm', 'dark', 'data', 'pop'];
+    const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+
+    // 隨機 App 名稱（全部加上 Emoji 吸引目光）
+    const appNames = [
+      '熱量現形記 🔍',        // 放大鏡 = 熱量透視
+      '我的秘密 AI 營養師 🤖', // AI 機器人
+      '越吃越瘦的秘密 🔥',   // 火焰 = 燃脂
+      '智能熱量管家 ⚡',      // 閃電 = 智能快速
+      '今天被 AI 監控了嗎？ 👀', // 眼睛 = 監控
+      '無痛減脂日常 💫',      // 星星 = 每天變好
+      '吃貨的贖罪券 😇',      // 天使 = 贖罪
+      '我的健康存摺 💰'       // 錢袋 = 存摺/財富
+    ];
+    const randomAppName = appNames[Math.floor(Math.random() * appNames.length)];
+
     function showTab(tabName) {
       document.querySelectorAll('.card-wrapper').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById('card-' + tabName).classList.add('active');
       event.target.classList.add('active');
     }
+
+    function getRandomStyle() {
+      return styles[Math.floor(Math.random() * styles.length)];
+    }
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function getRandomAppName() {
+      return appNames[Math.floor(Math.random() * appNames.length)];
+    }
+
+    function getRandomFoods() {
+      const allFoods = [
+        { name: '蘋果', emoji: '🍎', cal: 52 },
+        { name: '水煮蛋 x2', emoji: '🥚', cal: 156 },
+        { name: '糙米飯', emoji: '🍚', cal: 210 },
+        { name: '煎鮭魚', emoji: '🐟', cal: 280 },
+        { name: '凱撒沙拉', emoji: '🥗', cal: 185 },
+        { name: '香蕉', emoji: '🍌', cal: 89 },
+        { name: '烤雞胸', emoji: '🍗', cal: 165 },
+        { name: '希臘優格', emoji: '🥛', cal: 100 },
+        { name: '酪梨', emoji: '🥑', cal: 160 },
+        { name: '地瓜', emoji: '🍠', cal: 102 }
+      ];
+      const shuffled = shuffleArray(allFoods);
+      return shuffled.slice(0, 5);
+    }
+
+    function renderRandomCard() {
+      const style = getRandomStyle();
+      const appName = getRandomAppName();
+      const foods = getRandomFoods();
+      const totalCal = foods.reduce((sum, f) => sum + f.cal, 0);
+
+      // 隱藏所有卡片
+      document.querySelectorAll('.card-wrapper').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      // 顯示隨機卡片
+      const card = document.getElementById('card-' + style);
+      card.classList.add('active');
+
+      // 更新所有 Logo 文字
+      document.querySelectorAll('[class*="-logo"]').forEach(el => {
+        el.textContent = appName;
+      });
+
+      // 更新食物列表
+      const foodContainer = card.querySelector('[class*="-foods"]');
+      if (foodContainer) {
+        const title = foodContainer.querySelector('h3');
+        const foodItems = foodContainer.querySelectorAll('[class*="-food-item"]');
+        const foodIcons = ['🍎', '🥚', '🍚', '🐟', '🥗', '🍌', '🍗', '🥛', '🥑', '🍠'];
+
+        foods.forEach((food, i) => {
+          if (foodItems[i]) {
+            const nameEl = foodItems[i].querySelector('[class*="-name"]');
+            const calEl = foodItems[i].querySelector('[class*="-cal"]');
+            if (nameEl) nameEl.textContent = `${foodIcons[i]} ${food.name}`;
+            if (calEl) calEl.textContent = `${food.cal} kcal`;
+          }
+        });
+      }
+    }
+
+    // 初始化：隨機顯示
+    window.addEventListener('DOMContentLoaded', () => {
+      renderRandomCard();
+    });
   </script>
 </body>
 </html>
