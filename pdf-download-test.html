@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF 報告下載測試 - CaloScanAi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; padding: 40px 20px; color: white; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 10px; font-size: 28px; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 40px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; text-align: center; transition: transform 0.3s, background 0.3s; cursor: pointer; border: 2px solid transparent; }
+    .card:hover { background: rgba(255,255,255,0.1); transform: translateY(-5px); }
+    .card.selected { border-color: #00d9ff; background: rgba(0,217,255,0.1); }
+    .card h2 { font-size: 18px; margin-bottom: 15px; color: #00d9ff; }
+    .card p { font-size: 13px; color: #888; line-height: 1.5; }
+    .preview-img { width: 100%; height: 120px; background: #1a1a2e; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+    .btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #00d9ff, #0099ff); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 30px; transition: transform 0.2s; }
+    .btn:hover { transform: scale(1.02); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .note { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
+    .formats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
+    .format-btn { padding: 15px 10px; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: white; font-size: 14px; }
+    .format-btn:hover { background: rgba(255,255,255,0.2); }
+    .format-btn.active { border-color: #00d9ff; background: rgba(0,217,255,0.2); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📄 PDF 報告下載測試</h1>
+    <p class="subtitle">選擇一種格式後點擊下載按鈕</p>
+
+    <div class="formats">
+      <button class="format-btn active" onclick="selectFormat(1)">格式一<br><small>簡潔專業</small></button>
+      <button class="format-btn" onclick="selectFormat(2)">格式二<br><small>卡片式</small></button>
+      <button class="format-btn" onclick="selectFormat(3)">格式三<br><small>圖表視覺</small></button>
+      <button class="format-btn" onclick="selectFormat(4)">格式四<br><small>雜誌風</small></button>
+      <button class="format-btn" onclick="selectFormat(5)">格式五<br><small>資料庫</small></button>
+      <button class="format-btn" onclick="selectFormat(6)">格式六<br><small>現代清新</small></button>
+    </div>
+
+    <div class="grid">
+      <div class="card selected" id="card1" onclick="selectFormat(1)">
+        <div class="preview-img">📊</div>
+        <h2>格式一：簡潔專業型</h2>
+        <p>表格為主、數據清晰<br>綠色主題、專業商務風格</p>
+      </div>
+      <div class="card" id="card2" onclick="selectFormat(2)">
+        <div class="preview-img">💳</div>
+        <h2>格式二：卡片式</h2>
+        <p>emoji 圖示、卡片排列<br>活潑現代、圖像化呈現</p>
+      </div>
+      <div class="card" id="card3" onclick="selectFormat(3)">
+        <div class="preview-img">📈</div>
+        <h2>格式三：圖表視覺型</h2>
+        <p>柱狀圖 + 摘要數據<br>視覺化強、趨勢一眼掌握</p>
+      </div>
+      <div class="card" id="card4" onclick="selectFormat(4)">
+        <div class="preview-img">📰</div>
+        <h2>格式四：雜誌風格</h2>
+        <p>全英文、大數字<br>高端時尚、國際規格</p>
+      </div>
+      <div class="card" id="card5" onclick="selectFormat(5)">
+        <div class="preview-img">🗄️</div>
+        <h2>格式五：資料庫風格</h2>
+        <p>精簡數據、工程風格<br>條列式、資訊密度高</p>
+      </div>
+      <div class="card" id="card6" onclick="selectFormat(6)">
+        <div class="preview-img">🌸</div>
+        <h2>格式六：現代清新風</h2>
+        <p>柔和色調、週卡片<br>清新柔和、易讀性高</p>
+      </div>
+    </div>
+
+    <button class="btn" id="downloadBtn" onclick="downloadPDF()">
+      ⬇️ 下載 PDF 報告
+    </button>
+
+    <p class="note">* 需要登入 CaloScanAi 才能取得真實資料<br>測試模式使用模擬資料</p>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+    let selectedFormat = 1;
+
+    // 模擬資料
+    const mockRecords = [
+      { date: '2026-05-30', total_calories: 1920, total_protein: 68, total_carbs: 230, total_fat: 58 },
+      { date: '2026-05-29', total_calories: 1780, total_protein: 62, total_carbs: 210, total_fat: 52 },
+      { date: '2026-05-28', total_calories: 2050, total_protein: 72, total_carbs: 245, total_fat: 60 },
+      { date: '2026-05-27', total_calories: 1680, total_protein: 58, total_carbs: 200, total_fat: 48 },
+      { date: '2026-05-26', total_calories: 1890, total_protein: 65, total_carbs: 225, total_fat: 55 },
+      { date: '2026-05-25', total_calories: 1750, total_protein: 60, total_carbs: 210, total_fat: 50 },
+      { date: '2026-05-24', total_calories: 2100, total_protein: 75, total_carbs: 250, total_fat: 62 },
+      { date: '2026-05-23', total_calories: 1820, total_protein: 64, total_carbs: 218, total_fat: 54 },
+      { date: '2026-05-22', total_calories: 1950, total_protein: 70, total_carbs: 235, total_fat: 58 },
+      { date: '2026-05-21', total_calories: 1720, total_protein: 59, total_carbs: 205, total_fat: 49 },
+      { date: '2026-05-20', total_calories: 1880, total_protein: 66, total_carbs: 228, total_fat: 56 },
+      { date: '2026-05-19', total_calories: 1650, total_protein: 57, total_carbs: 198, total_fat: 47 },
+      { date: '2026-05-18', total_calories: 2020, total_protein: 73, total_carbs: 242, total_fat: 61 },
+      { date: '2026-05-17', total_calories: 1790, total_protein: 63, total_carbs: 215, total_fat: 53 },
+      { date: '2026-05-16', total_calories: 1930, total_protein: 69, total_carbs: 232, total_fat: 57 },
+    ];
+
+    function selectFormat(num) {
+      selectedFormat = num;
+      document.querySelectorAll('.format-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i + 1 === num);
+      });
+      document.querySelectorAll('.card').forEach((card, i) => {
+        card.classList.toggle('selected', i + 1 === num);
+      });
+    }
+
+    function safeNum(n) { return n == null ? 0 : (isNaN(n) ? 0 : Number(n)); }
+    function safeDate(d) { return d == null ? '' : String(d); }
+
+    function calcStats(records) {
+      const totalCal = records.reduce((sum, r) => sum + safeNum(r.total_calories), 0);
+      const totalPro = records.reduce((sum, r) => sum + safeNum(r.total_protein), 0);
+      const totalCarbs = records.reduce((sum, r) => sum + safeNum(r.total_carbs), 0);
+      const totalFat = records.reduce((sum, r) => sum + safeNum(r.total_fat), 0);
+      const len = records.length || 1;
+      return {
+        avgCal: Math.round(totalCal / len),
+        avgPro: Math.round(totalPro / len * 10) / 10,
+        avgCarbs: Math.round(totalCarbs / len * 10) / 10,
+        avgFat: Math.round(totalFat / len * 10) / 10
+      };
+    }
+
+    function downloadPDF() {
+      const btn = document.getElementById('downloadBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>產生中...';
+
+      setTimeout(() => {
+        const { avgCal, avgPro, avgCarbs, avgFat } = calcStats(mockRecords);
+        const endDateStr = '2026-05-30';
+
+        if (selectedFormat === 1) generateStyle1(avgCal, avgPro, avgCarbs, avgFat, endDateStr);
+        else if (selectedFormat === 2) generateStyle2(avgCal, avgPro, avgCarbs, avgFat, endDateStr);
+        else if (selectedFormat === 3) generateStyle3(avgCal, avgPro, avgCarbs, avgFat, endDateStr);
+        else if (selectedFormat === 4) generateStyle4(avgCal, avgPro, avgCarbs, avgFat, endDateStr);
+        else if (selectedFormat === 5) generateStyle5(avgCal, avgPro, avgCarbs, avgFat, endDateStr);
+        else if (selectedFormat === 6) generateStyle6(avgCal, avgPro, avgCarbs, avgFat, endDateStr);
+
+        btn.disabled = false;
+        btn.innerHTML = '⬇️ 下載 PDF 報告';
+      }, 500);
+    }
+
+    // 格式一：簡潔專業型
+    function generateStyle1(avgCal, avgPro, avgCarbs, avgFat, endDateStr) {
+      const doc = new jsPDF();
+      const pageW = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(22);
+      doc.setTextColor(45, 106, 79);
+      doc.text('CaloScanAi 健康報表', 20, 25);
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`${endDateStr} | 近${mockRecords.length}天`, 20, 32);
+
+      doc.setDrawColor(45, 106, 79);
+      doc.setLineWidth(0.5);
+      doc.line(20, 36, pageW - 20, 36);
+
+      const colW = (pageW - 40) / 4;
+      const summaryY = 42;
+      const items = [
+        { value: avgCal, label: '平均熱量 (kcal)' },
+        { value: avgPro + 'g', label: '平均蛋白質' },
+        { value: avgCarbs + 'g', label: '平均碳水' },
+        { value: avgFat + 'g', label: '平均脂肪' }
+      ];
+
+      items.forEach((item, i) => {
+        const x = 20 + i * colW;
+        doc.setFillColor(240, 249, 244);
+        doc.roundedRect(x, summaryY, colW - 2, 20, 2, 2, 'F');
+        doc.setFontSize(18);
+        doc.setTextColor(45, 106, 79);
+        doc.text(String(item.value), x + colW / 2, summaryY + 10, { align: 'center' });
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(item.label, x + colW / 2, summaryY + 16, { align: 'center' });
+      });
+
+      const tableY = 70;
+      doc.setFontSize(10);
+      doc.setFillColor(45, 106, 79);
+      doc.rect(20, tableY, pageW - 40, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.text('日期', 25, tableY + 6);
+      doc.text('熱量 (kcal)', 60, tableY + 6);
+      doc.text('蛋白質 (g)', 95, tableY + 6);
+      doc.text('碳水 (g)', 130, tableY + 6);
+      doc.text('脂肪 (g)', 165, tableY + 6);
+
+      let y = tableY + 10;
+      doc.setTextColor(60, 60, 60);
+      mockRecords.slice(0, 15).forEach((r, i) => {
+        if (i % 2 === 0) {
+          doc.setFillColor(249, 249, 249);
+          doc.rect(20, y - 4, pageW - 40, 8, 'F');
+        }
+        doc.setFontSize(9);
+        doc.text(safeDate(r.date).slice(5), 25, y + 2);
+        doc.text(String(safeNum(r.total_calories)), 60, y + 2);
+        doc.text(String(safeNum(r.total_protein)), 95, y + 2);
+        doc.text(String(safeNum(r.total_carbs)), 130, y + 2);
+        doc.text(String(safeNum(r.total_fat)), 165, y + 2);
+        y += 8;
+      });
+
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`由 CaloScanAi 自動生成`, pageW / 2, 290, { align: 'center' });
+
+      doc.save(`caloscanai_report_style1_${endDateStr}.pdf`);
+    }
+
+    // 格式二：卡片式
+    function generateStyle2(avgCal, avgPro, avgCarbs, avgFat, endDateStr) {
+      const doc = new jsPDF();
+      const pageW = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(20);
+      doc.setTextColor(60, 60, 60);
+      doc.text('營養攝取報告', pageW / 2, 25, { align: 'center' });
+
+      const colW = (pageW - 40) / 4;
+      const summaryY = 35;
+      const items = [
+        { value: avgCal, label: '平均熱量' },
+        { value: avgPro + 'g', label: '蛋白質' },
+        { value: avgCarbs + 'g', label: '碳水' },
+        { value: avgFat + 'g', label: '脂肪' }
+      ];
+
+      items.forEach((item, i) => {
+        const x = 20 + i * colW;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(x, summaryY, colW - 2, 28, 3, 3, 'F');
+        doc.setFontSize(16);
+        doc.setTextColor(102, 126, 234);
+        doc.text(String(item.value), x + colW / 2, summaryY + 14, { align: 'center' });
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(item.label, x + colW / 2, summaryY + 22, { align: 'center' });
+      });
+
+      let y = 75;
+      mockRecords.slice(0, 10).forEach((r, i) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.setFillColor(250, 250, 250);
+        doc.roundedRect(20, y - 4, pageW - 40, 14, 2, 2, 'F');
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 60);
+        doc.text(safeDate(r.date), 25, y + 4);
+        doc.text(`${safeNum(r.total_calories)} kcal`, 60, y + 4);
+        doc.text(`P: ${safeNum(r.total_protein)}g`, 110, y + 4);
+        doc.text(`C: ${safeNum(r.total_carbs)}g`, 145, y + 4);
+        doc.text(`F: ${safeNum(r.total_fat)}g`, 175, y + 4);
+        y += 16;
+      });
+
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`CaloScanAi`, pageW / 2, 290, { align: 'center' });
+
+      doc.save(`caloscanai_report_style2_${endDateStr}.pdf`);
+    }
+
+    // 格式三：圖表視覺型
+    function generateStyle3(avgCal, avgPro, avgCarbs, avgFat, endDateStr) {
+      const doc = new jsPDF();
+      const pageW = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(20);
+      doc.setTextColor(60, 60, 60);
+      doc.text('每週營養分析', pageW / 2, 20, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text('攝取趨勢視覺化', pageW / 2, 27, { align: 'center' });
+
+      const chartY = 35;
+      doc.setFillColor(248, 250, 255);
+      doc.roundedRect(20, chartY, pageW - 40, 50, 4, 4, 'F');
+
+      const recentRecords = mockRecords.slice(0, 7);
+      const barW = (pageW - 60) / 7;
+      const maxCal = Math.max(...recentRecords.map(r => safeNum(r.total_calories)), 1);
+      const chartBottom = chartY + 40;
+
+      recentRecords.forEach((r, i) => {
+        const barHeight = (safeNum(r.total_calories) / maxCal) * 30;
+        const x = 30 + i * barW;
+        doc.setFillColor(240, 147, 251);
+        doc.roundedRect(x, chartBottom - barHeight, barW - 4, barHeight, 1, 1, 'F');
+        doc.setFillColor(245, 87, 108);
+        doc.rect(x, chartBottom - barHeight, barW - 4, barHeight / 3, 'F');
+      });
+
+      const summaryY = 100;
+      const colW = (pageW - 40) / 4;
+      const items = [
+        { value: avgCal, label: '平均熱量' },
+        { value: avgPro + 'g', label: '蛋白質' },
+        { value: avgCarbs + 'g', label: '碳水' },
+        { value: avgFat + 'g', label: '脂肪' }
+      ];
+
+      items.forEach((item, i) => {
+        const x = 20 + i * colW;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(x, summaryY, colW - 2, 25, 3, 3, 'F');
+        doc.setFontSize(16);
+        doc.setTextColor(245, 87, 108);
+        doc.text(String(item.value), x + colW / 2, summaryY + 12, { align: 'center' });
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.text(item.label, x + colW / 2, summaryY + 20, { align: 'center' });
+      });
+
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`CaloScanAi`, pageW / 2, 290, { align: 'center' });
+
+      doc.save(`caloscanai_report_style3_${endDateStr}.pdf`);
+    }
+
+    // 格式四：雜誌風格（英文）
+    function generateStyle4(avgCal, avgPro, avgCarbs, avgFat, endDateStr) {
+      const doc = new jsPDF();
+      const pageW = doc.internal.pageSize.getWidth();
+
+      doc.setFillColor(0, 0, 0);
+      doc.rect(0, 0, pageW, 45, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(32);
+      doc.text('HEALTH REPORT', pageW / 2, 22, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text('CALOSCANAI', pageW / 2, 32, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text(`${mockRecords.length}-DAY SUMMARY`, pageW / 2, 40, { align: 'center' });
+
+      const heroY = 60;
+      doc.setFillColor(245, 245, 245);
+      doc.rect(20, heroY, pageW - 40, 45, 'F');
+
+      doc.setFontSize(48);
+      doc.setTextColor(0, 0, 0);
+      doc.text(String(avgCal), pageW / 2, heroY + 25, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text('DAILY AVERAGE CALORIES', pageW / 2, heroY + 38, { align: 'center' });
+
+      const nutriY = 115;
+      const colW = (pageW - 40) / 3;
+      const nutrients = [
+        { value: avgPro + 'g', label: 'PROTEIN' },
+        { value: avgCarbs + 'g', label: 'CARBS' },
+        { value: avgFat + 'g', label: 'FAT' }
+      ];
+
+      nutrients.forEach((n, i) => {
+        const x = 20 + i * colW;
+        doc.setFillColor(248, 248, 248);
+        doc.rect(x, nutriY, colW - 2, 35, 'F');
+        doc.setFontSize(24);
+        doc.setTextColor(0, 0, 0);
+        doc.text(n.value, x + colW / 2, nutriY + 16, { align: 'center' });
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(n.label, x + colW / 2, nutriY + 28, { align: 'center' });
+      });
+
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`CALOSCANAI | ${endDateStr}`, pageW / 2, 290, { align: 'center' });
+
+      doc.save(`caloscanai_report_style4_${endDateStr}.pdf`);
+    }
+
+    // 格式五：資料庫風格
+    function generateStyle5(avgCal, avgPro, avgCarbs, avgFat, endDateStr) {
+      const doc = new jsPDF();
+      const pageW = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(18);
+      doc.setTextColor(17, 153, 142);
+      doc.text('Daily Summary', 20, 25);
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Report Period: ${mockRecords.length > 0 ? mockRecords[mockRecords.length - 1].date : 'N/A'} ~ ${endDateStr}`, 20, 32);
+
+      doc.setDrawColor(17, 153, 142);
+      doc.setLineWidth(0.3);
+      doc.line(20, 36, pageW - 20, 36);
+
+      let y = 42;
+      const stats = [
+        { label: 'Average Calories', value: avgCal + ' kcal' },
+        { label: 'Average Protein', value: avgPro + 'g' },
+        { label: 'Average Carbs', value: avgCarbs + 'g' },
+        { label: 'Average Fat', value: avgFat + 'g' }
+      ];
+
+      stats.forEach(stat => {
+        doc.setFillColor(250, 252, 251);
+        doc.rect(20, y, pageW - 40, 7, 'F');
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(stat.label, 25, y + 5);
+        doc.setTextColor(17, 153, 142);
+        doc.text(stat.value, pageW - 25, y + 5, { align: 'right' });
+        y += 9;
+      });
+
+      y += 5;
+      doc.setFontSize(10);
+      doc.setFillColor(17, 153, 142);
+      doc.rect(20, y, pageW - 40, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.text('Date', 25, y + 5.5);
+      doc.text('Cal', 70, y + 5.5);
+      doc.text('P', 100, y + 5.5);
+      doc.text('C', 130, y + 5.5);
+      doc.text('F', 160, y + 5.5);
+      y += 10;
+
+      mockRecords.slice(0, 20).forEach((r, i) => {
+        if (y > 280) { doc.addPage(); y = 20; }
+        doc.setFontSize(9);
+        if (i % 2 === 0) {
+          doc.setFillColor(250, 250, 250);
+          doc.rect(20, y - 4, pageW - 40, 8, 'F');
+        }
+        doc.setTextColor(17, 153, 142);
+        doc.text(safeDate(r.date), 25, y + 2);
+        doc.setTextColor(60, 60, 60);
+        doc.text(String(safeNum(r.total_calories)), 70, y + 2);
+        doc.text(String(safeNum(r.total_protein)), 100, y + 2);
+        doc.text(String(safeNum(r.total_carbs)), 130, y + 2);
+        doc.text(String(safeNum(r.total_fat)), 160, y + 2);
+        y += 8;
+      });
+
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Generated by CaloScanAi`, pageW / 2, 290, { align: 'center' });
+
+      doc.save(`caloscanai_report_style5_${endDateStr}.pdf`);
+    }
+
+    // 格式六：現代清新風
+    function generateStyle6(avgCal, avgPro, avgCarbs, avgFat, endDateStr) {
+      const doc = new jsPDF();
+      const pageW = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(36);
+      doc.text('📋', pageW / 2, 25, { align: 'center' });
+      doc.setFontSize(20);
+      doc.setTextColor(60, 60, 60);
+      doc.text('30天健康報告', pageW / 2, 38, { align: 'center' });
+
+      const sumY = 50;
+      const items = [
+        { value: avgCal, label: '平均熱量' },
+        { value: avgPro + 'g', label: '蛋白質' },
+        { value: avgCarbs + 'g', label: '碳水' },
+        { value: avgFat + 'g', label: '脂肪' }
+      ];
+
+      const totalW = items.length * 45 + (items.length - 1) * 5;
+      const startX = (pageW - totalW) / 2;
+
+      items.forEach((item, i) => {
+        const x = startX + i * 50;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(x, sumY, 45, 28, 14, 14, 'F');
+        doc.setFontSize(14);
+        doc.setTextColor(60, 60, 60);
+        doc.text(String(item.value), x + 22.5, sumY + 12, { align: 'center' });
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(item.label, x + 22.5, sumY + 20, { align: 'center' });
+      });
+
+      const weekY = 90;
+      const recentRecords = mockRecords.slice(0, 14);
+      const cardW = (pageW - 50) / 7;
+      const cardH = 30;
+
+      recentRecords.forEach((r, i) => {
+        const col = i % 7;
+        const row = Math.floor(i / 7);
+        const x = 20 + col * cardW;
+        const y = weekY + row * (cardH + 5);
+
+        doc.setFillColor(248, 249, 250);
+        doc.roundedRect(x, y, cardW - 2, cardH, 4, 4, 'F');
+
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        const days = ['一', '二', '三', '四', '五', '六', '日'];
+        doc.text(days[col] || '', x + cardW / 2, y + 8, { align: 'center' });
+
+        doc.setFontSize(12);
+        doc.setTextColor(60, 60, 60);
+        doc.text(safeDate(r.date).slice(5), x + cardW / 2, y + 16, { align: 'center' });
+
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        const calStr = safeNum(r.total_calories) > 999 ? (safeNum(r.total_calories) / 1000).toFixed(1) + 'k' : String(safeNum(r.total_calories));
+        doc.text(calStr, x + cardW / 2, y + 24, { align: 'center' });
+      });
+
+      doc.setFontSize(9);
+      doc.setTextColor(150, 150, 150);
+      doc.text('✨ 由 CaloScanAi 為您生成 ✨', pageW / 2, 280, { align: 'center' });
+
+      doc.save(`caloscanai_report_style6_${endDateStr}.pdf`);
+    }
+  </script>
+</body>
+</html>
