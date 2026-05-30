@@ -1,11 +1,9 @@
 // CaloScanAi PDF 報告產生器 - 六種格式
-import jsPDF from 'jspdf';
+// 使用 html2canvas 轉圖片再轉 PDF，支援中文
 
-// 工具函式
 const safeNum = (n) => n == null ? 0 : (isNaN(n) ? 0 : Number(n));
 const safeDate = (d) => d == null ? '' : String(d);
 
-// 取得本地日期字串
 function getLocalDateStr(date) {
   const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
   const taiwan = new Date(utc + (8 * 60 * 60 * 1000));
@@ -15,7 +13,6 @@ function getLocalDateStr(date) {
   return `${y}-${m}-${day}`;
 }
 
-// 計算統計
 function calcStats(records) {
   const totalCal = records.reduce((sum, r) => sum + safeNum(r.total_calories), 0);
   const totalPro = records.reduce((sum, r) => sum + safeNum(r.total_protein), 0);
@@ -30,597 +27,360 @@ function calcStats(records) {
   };
 }
 
-// ============================================================
-// 格式一：簡潔專業型
-// ============================================================
-window.generatePDF_Style1 = async function(records, endDateStr) {
-  const { avgCal, avgPro, avgCarbs, avgFat } = calcStats(records);
-  const startDateObj = new Date();
-  startDateObj.setDate(startDateObj.getDate() - 30);
-  const startDateStr = getLocalDateStr(startDateObj);
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-
-  // 標題
-  doc.setFontSize(22);
-  doc.setTextColor(45, 106, 79); // #2d6a4f
-  doc.text('CaloScanAi 健康報表', 20, 25);
-  doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`${endDateStr} | 近${records.length}天`, 20, 32);
-
-  // 分隔線
-  doc.setDrawColor(45, 106, 79);
-  doc.setLineWidth(0.5);
-  doc.line(20, 36, pageW - 20, 36);
-
-  // 摘要格子
-  const colW = (pageW - 40) / 4;
-  const summaryY = 42;
-  const items = [
-    { value: avgCal, label: '平均熱量 (kcal)' },
-    { value: avgPro + 'g', label: '平均蛋白質' },
-    { value: avgCarbs + 'g', label: '平均碳水' },
-    { value: avgFat + 'g', label: '平均脂肪' }
-  ];
-
-  doc.setFillColor(240, 249, 244); // #f0f9f4
-  items.forEach((item, i) => {
-    const x = 20 + i * colW;
-    doc.roundedRect(x, summaryY, colW - 2, 20, 2, 2, 'F');
-    doc.setFontSize(18);
-    doc.setTextColor(45, 106, 79);
-    doc.text(String(item.value), x + colW / 2, summaryY + 10, { align: 'center' });
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text(item.label, x + colW / 2, summaryY + 16, { align: 'center' });
-  });
-
-  // 表格標題
-  const tableY = 70;
-  doc.setFontSize(10);
-  doc.setFillColor(45, 106, 79);
-  doc.rect(20, tableY, pageW - 40, 8, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.text('日期', 25, tableY + 6);
-  doc.text('熱量 (kcal)', 60, tableY + 6);
-  doc.text('蛋白質 (g)', 95, tableY + 6);
-  doc.text('碳水 (g)', 130, tableY + 6);
-  doc.text('脂肪 (g)', 165, tableY + 6);
-
-  // 表格內容
-  let y = tableY + 10;
-  doc.setTextColor(60, 60, 60);
-  records.slice(0, 25).forEach((r, i) => {
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
-    }
-    if (i % 2 === 0) {
-      doc.setFillColor(249, 249, 249);
-      doc.rect(20, y - 4, pageW - 40, 8, 'F');
-    }
-    doc.setFontSize(9);
-    doc.text(safeDate(r.date).slice(5), 25, y + 2);
-    doc.text(String(safeNum(r.total_calories)), 60, y + 2);
-    doc.text(String(safeNum(r.total_protein)), 95, y + 2);
-    doc.text(String(safeNum(r.total_carbs)), 130, y + 2);
-    doc.text(String(safeNum(r.total_fat)), 165, y + 2);
-    y += 8;
-  });
-
-  // 頁尾
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`由 CaloScanAi 自動生成 | ${new Date().toLocaleDateString('zh-TW')}`, pageW / 2, 290, { align: 'center' });
-
-  doc.save(`caloscanai_report_style1_${endDateStr}.pdf`);
-};
-
-// ============================================================
-// 格式二：卡片式
-// ============================================================
-window.generatePDF_Style2 = async function(records, endDateStr) {
-  const { avgCal, avgPro, avgCarbs, avgFat } = calcStats(records);
-  const icons = ['🔥', '💪', '🍞', '🥑'];
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-
-  // 標題
-  doc.setFontSize(20);
-  doc.setTextColor(60, 60, 60);
-  doc.text('🍎 營養攝取報告', pageW / 2, 25, { align: 'center' });
-
-  // 四格摘要卡片
-  const colW = (pageW - 40) / 4;
-  const summaryY = 35;
-  const items = [
-    { icon: icons[0], value: avgCal, label: '平均熱量' },
-    { icon: icons[1], value: avgPro + 'g', label: '蛋白質' },
-    { icon: icons[2], value: avgCarbs + 'g', label: '碳水' },
-    { icon: icons[3], value: avgFat + 'g', label: '脂肪' }
-  ];
-
-  items.forEach((item, i) => {
-    const x = 20 + i * colW;
-    // 白底卡片陰影
-    doc.setFillColor(240, 240, 240);
-    doc.roundedRect(x + 1, summaryY + 1, colW - 2, 28, 3, 3, 'F');
-    // 白底卡片
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(x, summaryY, colW - 2, 28, 3, 3, 'F');
-    // 數值
-    doc.setFontSize(16);
-    doc.setTextColor(102, 126, 234); // #667eea
-    doc.text(String(item.value), x + colW / 2, summaryY + 14, { align: 'center' });
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text(item.label, x + colW / 2, summaryY + 22, { align: 'center' });
-  });
-
-  // 每日卡片（週視圖）
-  const cardStartY = 72;
-  const cardW = (pageW - 50) / 7;
-  const recentRecords = records.slice(0, 7);
-
-  recentRecords.forEach((r, i) => {
-    const x = 20 + i * cardW;
-    // 卡片背景
-    doc.setFillColor(248, 249, 250);
-    doc.roundedRect(x, cardStartY, cardW - 2, 25, 2, 2, 'F');
-    // 日期
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(safeDate(r.date).slice(5), x + cardW / 2, cardStartY + 8, { align: 'center' });
-    // 熱量
-    doc.setFontSize(12);
-    doc.setTextColor(60, 60, 60);
-    const calStr = safeNum(r.total_calories) > 999 ? (safeNum(r.total_calories) / 1000).toFixed(1) + 'k' : String(safeNum(r.total_calories));
-    doc.text(calStr, x + cardW / 2, cardStartY + 18, { align: 'center' });
-  });
-
-  // 完整表格
-  let y = 105;
-  doc.setFontSize(12);
-  doc.setTextColor(60, 60, 60);
-  doc.text('每日詳細記錄', 20, y);
-  y += 8;
-
-  recentRecords.forEach((r, i) => {
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
-    }
-    doc.setFillColor(250, 250, 250);
-    doc.roundedRect(20, y - 4, pageW - 40, 18, 2, 2, 'F');
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(safeDate(r.date), 25, y + 4);
-    doc.text(`🔥 ${safeNum(r.total_calories)} kcal`, 60, y + 4);
-    doc.text(`💪 ${safeNum(r.total_protein)}g`, 100, y + 4);
-    doc.text(`🍞 ${safeNum(r.total_carbs)}g`, 135, y + 4);
-    doc.text(`🥑 ${safeNum(r.total_fat)}g`, 170, y + 4);
-    y += 20;
-  });
-
-  // 頁尾
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`CaloScanAi | ${new Date().toLocaleDateString('zh-TW')}`, pageW / 2, 290, { align: 'center' });
-
-  doc.save(`caloscanai_report_style2_${endDateStr}.pdf`);
-};
-
-// ============================================================
-// 格式三：圖表視覺型
-// ============================================================
-window.generatePDF_Style3 = async function(records, endDateStr) {
-  const { avgCal, avgPro, avgCarbs, avgFat } = calcStats(records);
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-
-  // 標題
-  doc.setFontSize(20);
-  doc.setTextColor(60, 60, 60);
-  doc.text('📊 每週營養分析', pageW / 2, 20, { align: 'center' });
-  doc.setFontSize(10);
-  doc.setTextColor(150, 150, 150);
-  doc.text('攝取趨勢視覺化', pageW / 2, 27, { align: 'center' });
-
-  // 圖表區背景
-  const chartY = 35;
-  doc.setFillColor(248, 250, 255); // #667eea20
-  doc.roundedRect(20, chartY, pageW - 40, 60, 4, 4, 'F');
-
-  // 柱狀圖（取近7天）
-  const recentRecords = records.slice(0, 7);
-  const barW = (pageW - 60) / 7;
-  const maxCal = Math.max(...recentRecords.map(r => safeNum(r.total_calories)), 1);
-  const chartBottom = chartY + 50;
-
-  recentRecords.forEach((r, i) => {
-    const barHeight = (safeNum(r.total_calories) / maxCal) * 40;
-    const x = 30 + i * barW;
-    // 漸層效果用不同顏色
-    const hue = 330 + i * 5;
-    doc.setFillColor(240, 147, 251); // #f093fb 頂部
-    doc.roundedRect(x, chartBottom - barHeight, barW - 4, barHeight, 1, 1, 'F');
-    doc.setFillColor(245, 87, 108); // #f5576c 底部
-    doc.roundedRect(x, chartBottom - barHeight, barW - 4, barHeight / 3, 0, 0, 'F');
-  });
-
-  // X軸標籤
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  const days = ['一', '二', '三', '四', '五', '六', '日'];
-  recentRecords.forEach((r, i) => {
-    const x = 30 + i * barW;
-    doc.text(days[i] || '', x + barW / 2, chartBottom + 6, { align: 'center' });
-  });
-
-  // 摘要數據
-  const summaryY = 110;
-  const colW = (pageW - 40) / 4;
-  const items = [
-    { value: avgCal, label: '平均熱量' },
-    { value: avgPro + 'g', label: '蛋白質' },
-    { value: avgCarbs + 'g', label: '碳水' },
-    { value: avgFat + 'g', label: '脂肪' }
-  ];
-
-  items.forEach((item, i) => {
-    const x = 20 + i * colW;
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(x, summaryY, colW - 2, 25, 3, 3, 'F');
-    doc.setFontSize(16);
-    doc.setTextColor(245, 87, 108); // #f5576c
-    doc.text(String(item.value), x + colW / 2, summaryY + 12, { align: 'center' });
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text(item.label, x + colW / 2, summaryY + 20, { align: 'center' });
-  });
-
-  // 詳細表格
-  let y = 145;
-  doc.setFontSize(12);
-  doc.setTextColor(60, 60, 60);
-  doc.text('每日記錄', 20, y);
-  y += 5;
-
-  doc.setFontSize(9);
-  doc.setFillColor(240, 147, 251);
-  doc.rect(20, y, pageW - 40, 6, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.text('日期', 25, y + 4);
-  doc.text('熱量', 60, y + 4);
-  doc.text('蛋白質', 95, y + 4);
-  doc.text('碳水', 130, y + 4);
-  doc.text('脂肪', 165, y + 4);
-  y += 8;
-
-  records.slice(0, 20).forEach((r, i) => {
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
-    }
-    doc.setTextColor(60, 60, 60);
-    doc.text(safeDate(r.date).slice(5), 25, y + 2);
-    doc.text(String(safeNum(r.total_calories)), 60, y + 2);
-    doc.text(String(safeNum(r.total_protein)), 95, y + 2);
-    doc.text(String(safeNum(r.total_carbs)), 130, y + 2);
-    doc.text(String(safeNum(r.total_fat)), 165, y + 2);
-    y += 7;
-  });
-
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`CaloScanAi | ${new Date().toLocaleDateString('zh-TW')}`, pageW / 2, 290, { align: 'center' });
-
-  doc.save(`caloscanai_report_style3_${endDateStr}.pdf`);
-};
-
-// ============================================================
-// 格式四：雜誌風格（英文）
-// ============================================================
-window.generatePDF_Style4 = async function(records, endDateStr) {
-  const { avgCal, avgPro, avgCarbs, avgFat } = calcStats(records);
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-
-  // 全寬黑色標題
-  doc.setFillColor(0, 0, 0);
-  doc.rect(0, 0, pageW, 45, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(32);
-  doc.text('HEALTH REPORT', pageW / 2, 22, { align: 'center' });
-  doc.setFontSize(12);
-  doc.text('CALOSCANAI', pageW / 2, 32, { align: 'center' });
-  doc.setFontSize(10);
-  doc.text(`${records.length}-DAY SUMMARY`, pageW / 2, 40, { align: 'center' });
-
-  // 大數字 hero
-  const heroY = 60;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(20, heroY, pageW - 40, 45, 'F');
-
-  doc.setFontSize(48);
-  doc.setTextColor(0, 0, 0);
-  doc.text(String(avgCal), pageW / 2, heroY + 25, { align: 'center' });
-  doc.setFontSize(12);
-  doc.setTextColor(100, 100, 100);
-  doc.text('DAILY AVERAGE CALORIES', pageW / 2, heroY + 38, { align: 'center' });
-
-  // 三格營養素
-  const nutriY = 115;
-  const colW = (pageW - 40) / 3;
-
-  const nutrients = [
-    { value: avgPro + 'g', label: 'PROTEIN' },
-    { value: avgCarbs + 'g', label: 'CARBS' },
-    { value: avgFat + 'g', label: 'FAT' }
-  ];
-
-  nutrients.forEach((n, i) => {
-    const x = 20 + i * colW;
-    doc.setFillColor(248, 248, 248);
-    doc.rect(x, nutriY, colW - 2, 35, 'F');
-    doc.setFontSize(24);
-    doc.setTextColor(0, 0, 0);
-    doc.text(n.value, x + colW / 2, nutriY + 16, { align: 'center' });
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(n.label, x + colW / 2, nutriY + 28, { align: 'center' });
-  });
-
-  // 日期列表
-  let y = 165;
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.text('DAILY BREAKDOWN', 20, y);
-  y += 5;
-
-  records.slice(0, 15).forEach((r, i) => {
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
-    }
-    const bgColor = i % 2 === 0 ? 248 : 255;
-    doc.setFillColor(bgColor);
-    doc.rect(20, y - 3, pageW - 40, 8, 'F');
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text(safeDate(r.date), 25, y + 2);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`${safeNum(r.total_calories)} kcal`, 60, y + 2);
-    doc.text(`P: ${safeNum(r.total_protein)}g`, 100, y + 2);
-    doc.text(`C: ${safeNum(r.total_carbs)}g`, 135, y + 2);
-    doc.text(`F: ${safeNum(r.total_fat)}g`, 170, y + 2);
-    y += 10;
-  });
-
-  // 頁尾
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`CALOSCANAI | ${endDateStr} | ${records.length}-DAY REPORT`, pageW / 2, 290, { align: 'center' });
-
-  doc.save(`caloscanai_report_style4_${endDateStr}.pdf`);
-};
-
-// ============================================================
-// 格式五：資料庫風格
-// ============================================================
-window.generatePDF_Style5 = async function(records, endDateStr) {
-  const { avgCal, avgPro, avgCarbs, avgFat } = calcStats(records);
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-
-  // 標題
-  doc.setFontSize(18);
-  doc.setTextColor(17, 153, 142); // #11998e
-  doc.text('Daily Summary', 20, 25);
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Report Period: ${records.length > 0 ? records[records.length - 1].date : 'N/A'} ~ ${endDateStr}`, 20, 32);
-
-  // 分隔線
-  doc.setDrawColor(17, 153, 142);
-  doc.setLineWidth(0.3);
-  doc.line(20, 36, pageW - 20, 36);
-
-  // 統計列
-  const stats = [
-    { label: 'Average Calories', value: avgCal + ' kcal' },
-    { label: 'Average Protein', value: avgPro + 'g' },
-    { label: 'Average Carbs', value: avgCarbs + 'g' },
-    { label: 'Average Fat', value: avgFat + 'g' }
-  ];
-
-  let y = 42;
-  stats.forEach(stat => {
-    doc.setFillColor(250, 252, 251);
-    doc.rect(20, y, pageW - 40, 7, 'F');
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(stat.label, 25, y + 5);
-    doc.setTextColor(17, 153, 142);
-    doc.text(stat.value, pageW - 25, y + 5, { align: 'right' });
-    y += 9;
-  });
-
-  // 表格
-  y += 5;
-  doc.setFontSize(10);
-  doc.setFillColor(17, 153, 142);
-  doc.rect(20, y, pageW - 40, 8, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.text('Date', 25, y + 5.5);
-  doc.text('Cal', 70, y + 5.5);
-  doc.text('P', 100, y + 5.5);
-  doc.text('C', 130, y + 5.5);
-  doc.text('F', 160, y + 5.5);
-  y += 10;
-
-  records.slice(0, 30).forEach((r, i) => {
-    if (y > 280) {
-      doc.addPage();
-      y = 20;
-    }
-    doc.setFontSize(9);
-    if (i % 2 === 0) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(20, y - 4, pageW - 40, 8, 'F');
-    }
-    doc.setTextColor(17, 153, 142);
-    doc.text(safeDate(r.date), 25, y + 2);
-    doc.setTextColor(60, 60, 60);
-    doc.text(String(safeNum(r.total_calories)), 70, y + 2);
-    doc.text(String(safeNum(r.total_protein)), 100, y + 2);
-    doc.text(String(safeNum(r.total_carbs)), 130, y + 2);
-    doc.text(String(safeNum(r.total_fat)), 160, y + 2);
-    y += 8;
-  });
-
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`Generated by CaloScanAi | ${new Date().toLocaleDateString('zh-TW')}`, pageW / 2, 290, { align: 'center' });
-
-  doc.save(`caloscanai_report_style5_${endDateStr}.pdf`);
-};
-
-// ============================================================
-// 格式六：現代清新風
-// ============================================================
-window.generatePDF_Style6 = async function(records, endDateStr) {
-  const { avgCal, avgPro, avgCarbs, avgFat } = calcStats(records);
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-
-  // Emoji 標題
-  doc.setFontSize(36);
-  doc.text('📋', pageW / 2, 25, { align: 'center' });
-  doc.setFontSize(20);
-  doc.setTextColor(60, 60, 60);
-  doc.text('30天健康報告', pageW / 2, 38, { align: 'center' });
-
-  // 摘要（圓角膠囊）
-  const sumY = 50;
-  const items = [
-    { value: avgCal, label: '平均熱量' },
-    { value: avgPro + 'g', label: '蛋白質' },
-    { value: avgCarbs + 'g', label: '碳水' },
-    { value: avgFat + 'g', label: '脂肪' }
-  ];
-
-  const totalW = items.length * 45 + (items.length - 1) * 5;
-  const startX = (pageW - totalW) / 2;
-
-  items.forEach((item, i) => {
-    const x = startX + i * 50;
-    // 漸層背景
-    doc.setFillColor(168, 237, 234, 50); // #a8edea with alpha
-    doc.roundedRect(x, sumY, 45, 28, 14, 14, 'F');
-    doc.setFillColor(254, 214, 227, 50); // #fed6e3 with alpha
-    doc.roundedRect(x + 2, sumY + 2, 41, 24, 12, 12, 'F');
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(x + 2, sumY + 2, 41, 22, 10, 10, 'F');
-    doc.setFontSize(14);
-    doc.setTextColor(60, 60, 60);
-    doc.text(String(item.value), x + 22.5, sumY + 12, { align: 'center' });
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text(item.label, x + 22.5, sumY + 20, { align: 'center' });
-  });
-
-  // 每週卡片
-  const weekY = 90;
-  const recentRecords = records.slice(0, 14);
-  const cardW = (pageW - 50) / 7;
-  const cardH = 30;
-
-  recentRecords.forEach((r, i) => {
-    const col = i % 7;
-    const row = Math.floor(i / 7);
-    const x = 20 + col * cardW;
-    const y = weekY + row * (cardH + 5);
-
-    doc.setFillColor(248, 249, 250);
-    doc.roundedRect(x, y, cardW - 2, cardH, 4, 4, 'F');
-
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    const days = ['一', '二', '三', '四', '五', '六', '日'];
-    doc.text(days[col] || '', x + cardW / 2, y + 8, { align: 'center' });
-
-    doc.setFontSize(12);
-    doc.setTextColor(60, 60, 60);
-    const dateStr = safeDate(r.date).slice(5);
-    doc.text(dateStr, x + cardW / 2, y + 16, { align: 'center' });
-
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    const calStr = safeNum(r.total_calories) > 999 ? (safeNum(r.total_calories) / 1000).toFixed(1) + 'k' : String(safeNum(r.total_calories));
-    doc.text(calStr, x + cardW / 2, y + 24, { align: 'center' });
-  });
-
-  // 頁尾
-  doc.setFontSize(9);
-  doc.setTextColor(150, 150, 150);
-  doc.text('✨ 由 CaloScanAi 為您生成 ✨', pageW / 2, 280, { align: 'center' });
-
-  doc.save(`caloscanai_report_style6_${endDateStr}.pdf`);
-};
-
-// ============================================================
-// 測試函式：從 API 取得資料產生 PDF
-// ============================================================
-window.downloadPDF_Style = async function(style, days = 30) {
-  try {
-    const toLocalDateStr = (d) => {
-      const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-      const taiwan = new Date(utc + (8 * 60 * 60 * 1000));
-      const y = taiwan.getFullYear();
-      const m = String(taiwan.getMonth() + 1).padStart(2, '0');
-      const day = String(taiwan.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    };
-
-    const endDateObj = new Date();
-    const startDateObj = new Date();
-    startDateObj.setDate(startDateObj.getDate() - days);
-    const endDateStr = toLocalDateStr(endDateObj);
-    const startDateStr = toLocalDateStr(startDateObj);
-
-    const response = await fetch('/api/progress/history?startDate=' + startDateStr + '&endDate=' + endDateStr + '&limit=' + days, {
-      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-    });
-
-    const result = await response.json();
-    if (!result.success || !result.data.records.length) {
-      alert('尚無資料可匯出');
-      return;
-    }
-
-    const generatorMap = {
-      1: window.generatePDF_Style1,
-      2: window.generatePDF_Style2,
-      3: window.generatePDF_Style3,
-      4: window.generatePDF_Style4,
-      5: window.generatePDF_Style5,
-      6: window.generatePDF_Style6
-    };
-
-    const generator = generatorMap[style];
-    if (generator) {
-      await generator(result.data.records, endDateStr);
-    }
-  } catch (error) {
-    console.error('PDF download error:', error);
-    alert('匯出失敗');
+// 建立隱藏的 HTML 容器用於渲染
+function createPDFContainer(style, stats, records, endDateStr) {
+  const { avgCal, avgPro, avgCarbs, avgFat } = stats;
+
+  const container = document.createElement('div');
+  container.id = 'pdf-render-container';
+  container.style.cssText = `
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 595px;
+    min-height: 842px;
+    background: white;
+    font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', Arial, sans-serif;
+    padding: 40px;
+    box-sizing: border-box;
+  `;
+
+  // 根據格式填充內容
+  let html = '';
+
+  if (style === 1) {
+    // 格式一：簡潔專業型
+    html = `
+      <div style="font-size:24px; color:#2d6a4f; border-bottom:3px solid #2d6a4f; padding-bottom:12px; margin-bottom:20px;">
+        CaloScanAi 健康報表
+      </div>
+      <div style="font-size:12px; color:#666; margin-bottom:25px;">
+        ${endDateStr} | 近${records.length}天
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:30px;">
+        <div style="background:#f0f9f4; padding:15px; border-radius:8px; text-align:center; border-left:4px solid #2d6a4f;">
+          <div style="font-size:28px; font-weight:bold; color:#2d6a4f;">${avgCal}</div>
+          <div style="font-size:12px; color:#666;">平均熱量 (kcal)</div>
+        </div>
+        <div style="background:#f0f9f4; padding:15px; border-radius:8px; text-align:center; border-left:4px solid #2d6a4f;">
+          <div style="font-size:28px; font-weight:bold; color:#2d6a4f;">${avgPro}g</div>
+          <div style="font-size:12px; color:#666;">平均蛋白質</div>
+        </div>
+        <div style="background:#f0f9f4; padding:15px; border-radius:8px; text-align:center; border-left:4px solid #2d6a4f;">
+          <div style="font-size:28px; font-weight:bold; color:#2d6a4f;">${avgCarbs}g</div>
+          <div style="font-size:12px; color:#666;">平均碳水</div>
+        </div>
+        <div style="background:#f0f9f4; padding:15px; border-radius:8px; text-align:center; border-left:4px solid #2d6a4f;">
+          <div style="font-size:28px; font-weight:bold; color:#2d6a4f;">${avgFat}g</div>
+          <div style="font-size:12px; color:#666;">平均脂肪</div>
+        </div>
+      </div>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#2d6a4f; color:white;">
+            <th style="padding:10px; text-align:center;">日期</th>
+            <th style="padding:10px; text-align:center;">熱量 (kcal)</th>
+            <th style="padding:10px; text-align:center;">蛋白質 (g)</th>
+            <th style="padding:10px; text-align:center;">碳水 (g)</th>
+            <th style="padding:10px; text-align:center;">脂肪 (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${records.slice(0, 20).map((r, i) => `
+            <tr style="background:${i % 2 === 0 ? '#f9f9f9' : 'white'};">
+              <td style="padding:10px; text-align:center;">${safeDate(r.date).slice(5)}</td>
+              <td style="padding:10px; text-align:center;">${safeNum(r.total_calories)}</td>
+              <td style="padding:10px; text-align:center;">${safeNum(r.total_protein)}</td>
+              <td style="padding:10px; text-align:center;">${safeNum(r.total_carbs)}</td>
+              <td style="padding:10px; text-align:center;">${safeNum(r.total_fat)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="text-align:center; margin-top:40px; font-size:10px; color:#999;">
+        由 CaloScanAi 自動生成 | ${new Date().toLocaleDateString('zh-TW')}
+      </div>
+    `;
+  } else if (style === 2) {
+    // 格式二：卡片式
+    html = `
+      <div style="font-size:22px; text-align:center; margin-bottom:25px; color:#333;">
+        🍎 營養攝取報告
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:30px;">
+        <div style="background:white; border-radius:12px; padding:20px; text-align:center; box-shadow:0 4px 15px rgba(102,126,234,0.15);">
+          <div style="font-size:30px; margin-bottom:8px;">🔥</div>
+          <div style="font-size:24px; font-weight:bold; background:linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${avgCal}</div>
+          <div style="font-size:12px; color:#666;">平均熱量</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:20px; text-align:center; box-shadow:0 4px 15px rgba(102,126,234,0.15);">
+          <div style="font-size:30px; margin-bottom:8px;">💪</div>
+          <div style="font-size:24px; font-weight:bold; background:linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${avgPro}g</div>
+          <div style="font-size:12px; color:#666;">蛋白質</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:20px; text-align:center; box-shadow:0 4px 15px rgba(102,126,234,0.15);">
+          <div style="font-size:30px; margin-bottom:8px;">🍞</div>
+          <div style="font-size:24px; font-weight:bold; background:linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${avgCarbs}g</div>
+          <div style="font-size:12px; color:#666;">碳水</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:20px; text-align:center; box-shadow:0 4px 15px rgba(102,126,234,0.15);">
+          <div style="font-size:30px; margin-bottom:8px;">🥑</div>
+          <div style="font-size:24px; font-weight:bold; background:linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${avgFat}g</div>
+          <div style="font-size:12px; color:#666;">脂肪</div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:20px;">
+        ${records.slice(0, 7).map(r => `
+          <div style="background:#f8f9fa; border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:11px; color:#999;">${safeDate(r.date).slice(5)}</div>
+            <div style="font-size:14px; font-weight:bold; color:#333;">${safeNum(r.total_calories)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="text-align:center; font-size:10px; color:#999; margin-top:20px;">
+        CaloScanAi | ${new Date().toLocaleDateString('zh-TW')}
+      </div>
+    `;
+  } else if (style === 3) {
+    // 格式三：圖表視覺型
+    const maxCal = Math.max(...records.slice(0, 7).map(r => safeNum(r.total_calories)), 1);
+    html = `
+      <div style="font-size:22px; text-align:center; color:#333; margin-bottom:5px;">
+        📊 每週營養分析
+      </div>
+      <div style="font-size:12px; text-align:center; color:#999; margin-bottom:20px;">
+        攝取趨勢視覺化
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(102,126,234,0.1),rgba(118,75,162,0.1)); border-radius:16px; padding:20px; margin-bottom:20px; display:flex; align-items:flex-end; justify-content:space-between; height:120px;">
+        ${records.slice(0, 7).map((r, i) => {
+          const h = Math.round((safeNum(r.total_calories) / maxCal) * 100);
+          const hues = ['#f093fb', '#f5576c', '#667eea', '#764ba2', '#2d6a4f', '#11998e', '#38ef7d'];
+          return `<div style="width:40px; background:linear-gradient(180deg,${hues[i]},${hues[i]}80); border-radius:4px 4px 0 0; height:${h}%;"></div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:11px; color:#666;">
+        <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px;">
+        <div style="background:white; border-radius:12px; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+          <div style="font-size:24px; font-weight:bold; color:#f5576c;">${avgCal}</div>
+          <div style="font-size:11px; color:#666;">平均熱量</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+          <div style="font-size:24px; font-weight:bold; color:#f5576c;">${avgPro}g</div>
+          <div style="font-size:11px; color:#666;">蛋白質</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+          <div style="font-size:24px; font-weight:bold; color:#f5576c;">${avgCarbs}g</div>
+          <div style="font-size:11px; color:#666;">碳水</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:15px; text-align:center; box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+          <div style="font-size:24px; font-weight:bold; color:#f5576c;">${avgFat}g</div>
+          <div style="font-size:11px; color:#666;">脂肪</div>
+        </div>
+      </div>
+      <div style="text-align:center; font-size:10px; color:#999; margin-top:20px;">
+        CaloScanAi | ${new Date().toLocaleDateString('zh-TW')}
+      </div>
+    `;
+  } else if (style === 4) {
+    // 格式四：雜誌風格（英文）
+    html = `
+      <div style="background:black; color:white; padding:30px; text-align:center; margin-bottom:30px;">
+        <div style="font-size:36px; font-weight:bold; letter-spacing:2px;">HEALTH REPORT</div>
+        <div style="font-size:14px; margin-top:10px;">CALOSCANAI | ${records.length}-DAY SUMMARY</div>
+      </div>
+      <div style="text-align:center; padding:30px 0; border-bottom:1px dashed #ccc; margin-bottom:25px;">
+        <div style="font-size:72px; font-weight:bold; color:#000; line-height:1;">${avgCal}</div>
+        <div style="font-size:14px; color:#666; text-transform:uppercase; letter-spacing:3px; margin-top:10px;">Daily Average Calories</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:30px;">
+        <div style="background:#f5f5f5; padding:25px; text-align:center;">
+          <div style="font-size:36px; font-weight:bold; color:#000;">${avgPro}g</div>
+          <div style="font-size:12px; color:#666; text-transform:uppercase;">Protein</div>
+        </div>
+        <div style="background:#f5f5f5; padding:25px; text-align:center;">
+          <div style="font-size:36px; font-weight:bold; color:#000;">${avgCarbs}g</div>
+          <div style="font-size:12px; color:#666; text-transform:uppercase;">Carbs</div>
+        </div>
+        <div style="background:#f5f5f5; padding:25px; text-align:center;">
+          <div style="font-size:36px; font-weight:bold; color:#000;">${avgFat}g</div>
+          <div style="font-size:12px; color:#666; text-transform:uppercase;">Fat</div>
+        </div>
+      </div>
+      <table style="width:100%; border-collapse:collapse;">
+        ${records.slice(0, 15).map((r, i) => `
+          <tr style="background:${i % 2 === 0 ? '#f9f9f9' : 'white'};">
+            <td style="padding:8px; color:#666;">${safeDate(r.date)}</td>
+            <td style="padding:8px; font-weight:bold;">${safeNum(r.total_calories)} kcal</td>
+            <td style="padding:8px;">P: ${safeNum(r.total_protein)}g</td>
+            <td style="padding:8px;">C: ${safeNum(r.total_carbs)}g</td>
+            <td style="padding:8px;">F: ${safeNum(r.total_fat)}g</td>
+          </tr>
+        `).join('')}
+      </table>
+      <div style="text-align:center; margin-top:30px; font-size:10px; color:#999;">
+        CALOSCANAI | ${endDateStr} | ${records.length}-DAY REPORT
+      </div>
+    `;
+  } else if (style === 5) {
+    // 格式五：資料庫風格
+    html = `
+      <div style="font-size:22px; color:#11998e; margin-bottom:5px;">Daily Summary</div>
+      <div style="font-size:12px; color:#666; margin-bottom:20px;">
+        Report Period: ${records.length > 0 ? records[records.length - 1].date : 'N/A'} ~ ${endDateStr}
+      </div>
+      <div style="border-bottom:1px solid #11998e; margin-bottom:20px;"></div>
+      ${[
+        { label: 'Average Calories', value: avgCal + ' kcal' },
+        { label: 'Average Protein', value: avgPro + 'g' },
+        { label: 'Average Carbs', value: avgCarbs + 'g' },
+        { label: 'Average Fat', value: avgFat + 'g' }
+      ].map(s => `
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+          <span style="color:#666;">${s.label}</span>
+          <span style="font-weight:bold; color:#11998e;">${s.value}</span>
+        </div>
+      `).join('')}
+      <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+        <thead>
+          <tr style="background:#11998e; color:white;">
+            <th style="padding:8px; text-align:left;">Date</th>
+            <th style="padding:8px; text-align:right;">Cal</th>
+            <th style="padding:8px;">P</th>
+            <th style="padding:8px;">C</th>
+            <th style="padding:8px;">F</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${records.slice(0, 25).map((r, i) => `
+            <tr style="background:${i % 2 === 0 ? '#fafafa' : 'white'};">
+              <td style="padding:8px; color:#11998e; font-weight:bold;">${safeDate(r.date)}</td>
+              <td style="padding:8px; text-align:right;">${safeNum(r.total_calories)}</td>
+              <td style="padding:8px;">${safeNum(r.total_protein)}</td>
+              <td style="padding:8px;">${safeNum(r.total_carbs)}</td>
+              <td style="padding:8px;">${safeNum(r.total_fat)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="text-align:center; margin-top:20px; font-size:10px; color:#999;">
+        Generated by CaloScanAi | ${new Date().toLocaleDateString('zh-TW')}
+      </div>
+    `;
+  } else if (style === 6) {
+    // 格式六：現代清新風
+    html = `
+      <div style="font-size:40px; text-align:center; margin-bottom:10px;">📋</div>
+      <div style="font-size:22px; text-align:center; color:#333; margin-bottom:25px;">30天健康報告</div>
+      <div style="display:flex; justify-content:center; gap:15px; margin-bottom:30px;">
+        ${[
+          { value: avgCal, label: '平均熱量' },
+          { value: avgPro + 'g', label: '蛋白質' },
+          { value: avgCarbs + 'g', label: '碳水' },
+          { value: avgFat + 'g', label: '脂肪' }
+        ].map(item => `
+          <div style="background:linear-gradient(135deg,rgba(168,237,234,0.3),rgba(254,214,227,0.3)); padding:15px 20px; border-radius:20px; text-align:center;">
+            <div style="font-size:18px; font-weight:bold; color:#333;">${item.value}</div>
+            <div style="font-size:11px; color:#666;">${item.label}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:20px;">
+        ${records.slice(0, 14).map((r, i) => {
+          const days = ['一', '二', '三', '四', '五', '六', '日'];
+          const col = i % 7;
+          return `
+            <div style="background:#f8f9fa; border-radius:10px; padding:12px; text-align:center;">
+              <div style="font-size:10px; color:#999;">${days[col]}</div>
+              <div style="font-size:13px; font-weight:bold; color:#333;">${safeDate(r.date).slice(5)}</div>
+              <div style="font-size:11px; color:#666; margin-top:5px;">${safeNum(r.total_calories)}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div style="text-align:center; margin-top:25px; font-size:12px; color:#999;">
+        ✨ 由 CaloScanAi 為您生成 ✨
+      </div>
+    `;
   }
+
+  container.innerHTML = html;
+  return container;
+}
+
+// 產生 PDF
+window.generatePDF_Style = async function(style, records, endDateStr) {
+  const stats = calcStats(records);
+
+  // 建立 HTML 容器
+  const container = createPDFContainer(style, stats, records, endDateStr);
+  document.body.appendChild(container);
+
+  // 等待 html2canvas
+  if (typeof html2canvas === 'undefined') {
+    await window.loadHtml2Canvas();
+  }
+
+  // 截圖
+  const canvas = await html2canvas(container, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    width: 595,
+    height: container.scrollHeight
+  });
+
+  // 移除容器
+  document.body.removeChild(container);
+
+  // 建立 PDF (A5 格式，適合手機)
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: [148, 210] // A5
+  });
+
+  const imgWidth = 148;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, Math.min(imgHeight, 210));
+
+  doc.save(`caloscanai_report_style${style}_${endDateStr}.pdf`);
+};
+
+// 測試用：下載指定格式
+window.downloadPDF_Style = async function(style) {
+  const toLocalDateStr = (d) => {
+    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    const taiwan = new Date(utc + (8 * 60 * 60 * 1000));
+    const y = taiwan.getFullYear();
+    const m = String(taiwan.getMonth() + 1).padStart(2, '0');
+    const day = String(taiwan.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const endDateObj = new Date();
+  const endDateStr = toLocalDateStr(endDateObj);
+
+  // 模擬資料
+  const mockRecords = [
+    { date: '2026-05-30', total_calories: 1920, total_protein: 68, total_carbs: 230, total_fat: 58 },
+    { date: '2026-05-29', total_calories: 1780, total_protein: 62, total_carbs: 210, total_fat: 52 },
+    { date: '2026-05-28', total_calories: 2050, total_protein: 72, total_carbs: 245, total_fat: 60 },
+    { date: '2026-05-27', total_calories: 1680, total_protein: 58, total_carbs: 200, total_fat: 48 },
+    { date: '2026-05-26', total_calories: 1890, total_protein: 65, total_carbs: 225, total_fat: 55 },
+    { date: '2026-05-25', total_calories: 1750, total_protein: 60, total_carbs: 210, total_fat: 50 },
+    { date: '2026-05-24', total_calories: 2100, total_protein: 75, total_carbs: 250, total_fat: 62 },
+    { date: '2026-05-23', total_calories: 1820, total_protein: 64, total_carbs: 218, total_fat: 54 },
+    { date: '2026-05-22', total_calories: 1950, total_protein: 70, total_carbs: 235, total_fat: 58 },
+    { date: '2026-05-21', total_calories: 1720, total_protein: 59, total_carbs: 205, total_fat: 49 },
+    { date: '2026-05-20', total_calories: 1880, total_protein: 66, total_carbs: 228, total_fat: 56 },
+    { date: '2026-05-19', total_calories: 1650, total_protein: 57, total_carbs: 198, total_fat: 47 },
+    { date: '2026-05-18', total_calories: 2020, total_protein: 73, total_carbs: 242, total_fat: 61 },
+    { date: '2026-05-17', total_calories: 1790, total_protein: 63, total_carbs: 215, total_fat: 53 },
+  ];
+
+  await window.generatePDF_Style(style, mockRecords, endDateStr);
 };
